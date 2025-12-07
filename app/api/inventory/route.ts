@@ -5,17 +5,19 @@ import { inventorySchema } from "@/lib/validators";
 
 export async function GET(req: NextRequest) {
   const auth = await getAuthContext(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { searchParams } = new URL(req.url);
   const storeId = searchParams.get("storeId") ?? undefined;
+
+  if (!auth && !storeId) {
+    return NextResponse.json({ error: "storeId is required for unauthenticated requests" }, { status: 400 });
+  }
 
   const inventory = await prisma.inventory.findMany({
     where: storeId
       ? {
-          store: { id: storeId, ownerId: auth.userId }
+          store: auth ? { id: storeId, ownerId: auth.userId } : { id: storeId }
         }
-      : { store: { ownerId: auth.userId } },
+      : { store: { ownerId: auth!.userId } },
     include: { item: true, store: true }
   });
 

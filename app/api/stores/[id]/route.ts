@@ -10,13 +10,9 @@ async function assertOwner(userId: string, storeId: string) {
   return store;
 }
 
-export async function GET(req: NextRequest, { params }: Params) {
-  const auth = await getAuthContext(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const store = await assertOwner(auth.userId, params.id);
+export async function GET(_req: NextRequest, { params }: Params) {
+  const store = await prisma.store.findUnique({ where: { id: params.id } });
   if (!store) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
   return NextResponse.json({ store });
 }
 

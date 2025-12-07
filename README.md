@@ -49,3 +49,39 @@ Full-stack inventory management and consumer search platform built with Next.js 
 - Run Prisma migrations: `pnpm prisma migrate dev`.
 
 More detailed run/deploy guides are provided later in this repository.
+
+## Directory Layout
+- `app/api/**`: Next.js API routes (auth, stores, items, inventory, search).
+- `app/merchant/**`: Merchant portal pages (auth, dashboard, items, inventory, store settings).
+- `app/consumer/**`: Consumer search flows (home, search, store detail, item detail).
+- `components/**`: Reusable UI + feature components (merchant image upload, map).
+- `lib/**`: Prisma client, Supabase clients, auth helpers, validation schemas.
+- `prisma/**`: Prisma schema + migrations.
+- `supabase/policies.sql`: Suggested Supabase RLS policies.
+
+## Run Locally
+1) Install deps: `pnpm install` (or `npm install`).
+2) Copy envs: `cp .env.example .env.local` and fill Supabase + Mapbox values.
+3) Apply DB schema: `pnpm prisma migrate dev`.
+4) Start dev server: `pnpm dev` then open `http://localhost:3000`.
+5) Seed data (optional): use API routes with `curl` or the merchant UI.
+
+## Deploy (Vercel + Supabase)
+1) Create Supabase project, set DB password, and create a storage bucket (default `item-images`).
+2) Run migrations: `pnpm prisma migrate deploy` using the Supabase connection string.
+3) Apply RLS policies from `supabase/policies.sql` inside the Supabase SQL editor.
+4) Set Vercel env vars: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`.
+5) Deploy via `vercel` CLI or Git integration; Vercel will build Next.js + Prisma.
+
+## Modules (Phase 6)
+- **auth**: `app/api/auth/*`, `lib/auth.ts`, Supabase admin client.
+- **db**: `prisma/schema.prisma`, `prisma/migrations/*`, `lib/prisma.ts`.
+- **api**: `app/api/stores|items|inventory|search`, shared validation in `lib/validators.ts`.
+- **components**: UI primitives (`components/ui/*`), merchant image upload, consumer map.
+- **hooks/utils**: Validation schemas, auth context helper, Prisma/Supabase clients.
+
+## Future Expansion
+- Expo React Native app can reuse API + validation schemas.
+- Barcode scanning: add native module to Expo or web camera barcode scanner; post to `/api/search`.
+- AI search: embed item metadata and use vector search (Supabase pgvector) before filtering by inventory.
+- Multi-store merchant teams: add `Team` model and membership with RLS adjustments.
